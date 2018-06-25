@@ -22,6 +22,9 @@ class Recorder(object):
     def set_audio_properties(self, audio_properties):
         self.audio_properties = audio_properties
         
+    def get_output_file_path(self):
+        return self.output_file_path
+
     def set_output_file_path(self, output_file_path):
         self.output_file_path = output_file_path
         

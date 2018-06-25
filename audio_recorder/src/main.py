@@ -3,13 +3,16 @@ Created on Jun 1, 2018
 
 @author: Nebojsa
 '''
-from flask import Flask 
+from flask import Flask, send_file
 from model.audio_properties import Audio_properties
 from recorder.recorder import Recorder
+import os
 
 if __name__ == '__main__':
     app = Flask(__name__)
     recorder = Recorder()
+
+    port = 297
     
     @app.route('/record')
     def record_and_save():
@@ -28,4 +31,13 @@ if __name__ == '__main__':
         recorder.set_output_file_path(path)
         return "NEW FILE PATH SET"
 
-    app.run(host='0.0.0.0', port=297) 
+    @app.route('/get_output_file')
+    def get_output_file():
+        try:
+            full_path = os.path.join(os.path.abspath(__file__), "..", recorder.get_output_file_path())
+            file_name = full_path.split('/')[-1]
+            return send_file(full_path, attachment_filename=file_name)
+        except Exception as e:
+           return str(e)
+
+    app.run(host='0.0.0.0', port=port) 
