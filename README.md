@@ -27,6 +27,10 @@ First S3 bucket is used to store audio files, read them and send them
 to aws Transcribe for automatic speech recognition. Second bucket is used
 for aws Transcribe to store json result files.
 
+It's using WER algorithm to calculate difference between reference and aws result.
+It's writting results in procent and it's writting all the words and operations so
+user can see what's happening.
+
 #### Requirements:
 
 * Run requirements.bat or requirements.sh to install required python libraries. Script is going to install boto3 with pip3.
@@ -52,7 +56,27 @@ Helpful description in [aws documentation](https://docs.aws.amazon.com/transcrib
 
 #### Running:
 
-Run main.py to run testing of voice recognition for audio files on first S3 bucket.
+Run different bash scripts for different actions:
+
+* Uploading audio files to s3 bucket:
 ```
-python3 system_for_testing/src/main.py
+system_for_testing/upload_audio_files.sh
 ```
+
+* Running transcribe jobs:
+```
+system_for_testing/start_transcribe_jobs.sh
+```
+
+* Downloading results from s3 bucket that transcribe jobs provided:
+```
+system_for_testing/download_results.sh
+```
+
+* Run Word error rate algorithm:
+```
+system_for_testing/run_wer.sh
+```
+
+These scripts are calling system_for_testing/src/main.py with different parameters, look into them to
+see how to call python script directly.
