@@ -42,8 +42,6 @@ if __name__ == '__main__':
         except Exception as e:
             return str(e)
 
-    hostname = "nrajic-ZBook-15-G4"
-    
     # Finding personal IP address
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
