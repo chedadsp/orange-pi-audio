@@ -1,23 +1,26 @@
-'''
+"""
 Created on Jun 1, 2018
 
 @author: Nebojsa
-'''
+"""
 import pyaudio
 import wave
+import threading
 from model.audio_properties import Audio_properties
 
-class Recorder(object):
-    '''
-    classdocs
-    '''
+
+class Recorder(threading.Thread):
 
     def __init__(self, audio_properties=Audio_properties(), output_file_path="../output/test.wav"):
-        '''
-        Constructor
-        '''
+        threading.Thread.__init__(self)
         self.audio_properties = audio_properties
         self.output_file_path = output_file_path
+        self.is_recording = False
+
+    def run(self):
+        print("Start recording thread.")
+        self.record_and_save()
+        print("End recording thread.")
         
     def set_audio_properties(self, audio_properties):
         self.audio_properties = audio_properties
@@ -27,6 +30,9 @@ class Recorder(object):
 
     def set_output_file_path(self, output_file_path):
         self.output_file_path = output_file_path
+
+    def is_recording(self):
+        return self.is_recording
         
     def record_and_save(self):
 
@@ -46,10 +52,9 @@ class Recorder(object):
                         frames_per_buffer=frames_per_buffer)
 
         print("* recording")
-
+        self.is_recording = True
         frames = []
-
-        for i in range(0, int(rate / frames_per_buffer * record_seconds)):
+        while self.is_recording:
             data = stream.read(frames_per_buffer)
             frames.append(data)
 
@@ -65,3 +70,6 @@ class Recorder(object):
         wf.setframerate(rate)
         wf.writeframes(b''.join(frames))
         wf.close()
+
+    def stop_recording(self):
+        self.is_recording = False

@@ -1,0 +1,1 @@
+So I can commit empty folder on git.
