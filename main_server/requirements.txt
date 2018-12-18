@@ -1,0 +1,4 @@
+flask
+pyaudio
+wave
+libs/miniupnpc-2.0.2.tar.gz
