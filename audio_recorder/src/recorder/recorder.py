@@ -15,7 +15,7 @@ class Recorder(threading.Thread):
         threading.Thread.__init__(self)
         self.audio_properties = audio_properties
         self.output_file_path = output_file_path
-        self.is_recording = False
+        self.__is_recording = False
 
     def run(self):
         print("Start recording thread.")
@@ -32,18 +32,17 @@ class Recorder(threading.Thread):
         self.output_file_path = output_file_path
 
     def is_recording(self):
-        return self.is_recording
+        return self.__is_recording
         
     def record_and_save(self):
 
         p = pyaudio.PyAudio()
 
-        audio_format=self.audio_properties.get_audio_format()
-        channels=self.audio_properties.get_channels()
-        rate=self.audio_properties.get_rate()
-        audio_input=self.audio_properties.get_audio_input()
-        frames_per_buffer=self.audio_properties.get_chunk()
-        record_seconds=self.audio_properties.get_record_seconds()
+        audio_format = self.audio_properties.get_audio_format()
+        channels = self.audio_properties.get_channels()
+        rate = self.audio_properties.get_rate()
+        audio_input = self.audio_properties.get_audio_input()
+        frames_per_buffer = self.audio_properties.get_chunk()
         
         stream = p.open(format=audio_format,
                         channels=channels,
@@ -52,9 +51,9 @@ class Recorder(threading.Thread):
                         frames_per_buffer=frames_per_buffer)
 
         print("* recording")
-        self.is_recording = True
+        self.__is_recording = True
         frames = []
-        while self.is_recording:
+        while self.__is_recording:
             data = stream.read(frames_per_buffer)
             frames.append(data)
 
@@ -72,4 +71,4 @@ class Recorder(threading.Thread):
         wf.close()
 
     def stop_recording(self):
-        self.is_recording = False
+        self.__is_recording = False
