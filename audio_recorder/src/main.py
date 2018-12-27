@@ -6,36 +6,24 @@ Created on Jun 1, 2018
 from flask import Flask, send_file
 from model.audio_properties import Audio_properties
 from recorder.recorder import Recorder
+from udp_sender.udp_sender import UDPSender
 import os
-import miniupnpc
 
 if __name__ == '__main__':
     app = Flask(__name__)
+
     recorder = Recorder()
     audio_properties = Audio_properties()
     output_file_path = "../output/test.wav"
 
-    port = 63000
+    udp_sender = UDPSender()
+    udp_sender.starting_server_message()
 
-    # Setting upnp
-    upnp = miniupnpc.UPnP()
-    
-    upnp.discoverdelay = 200
-    ndevices = upnp.discover()
-    print(ndevices, 'device(s) detected')
-    try:
-        upnp.selectigd()
-        # addportmapping(external-port, protocol, internal-host, internal-port, description, remote-host)
-        result = upnp.addportmapping(port, 'TCP', upnp.lanaddr, port, 'testing', '')
-        
-        print(result)
-    except Exception as e:
-        print("Exception : ", e)
-        
+    port = 63000
     
     @app.route('/record')
     def record_and_save():
-        global recorder, audio_properties, output_file_path
+        global recorder
         if recorder.is_recording():
             return "Already recording"
         else:
@@ -43,11 +31,9 @@ if __name__ == '__main__':
             recorder.start()
             return "Recording"
 
-
     @app.route('/stop_recording')
     def stop_recording():
-        global recorder
-        if recorder.is_recording():
+        if not recorder.is_recording():
             return "Not recording"
         else:
             recorder.stop_recording()
@@ -55,8 +41,7 @@ if __name__ == '__main__':
             return "Stopped recording"
     
     @app.route('/set_audio_properties/<int:chunk>/<int:channels>/<int:rate>/<int:record_seconds>/<int:audio_input>')
-    def set_audio_propeties(chunk, channels, rate, record_seconds, audio_input):
-        "nisam uspeo namestiti audio format jer se poziva python enumeracija da bi se dobila"
+    def set_audio_properties(chunk, channels, rate, record_seconds, audio_input):
         global audio_properties
         audio_properties = Audio_properties(chunk=chunk, channels=channels, rate=rate, record_seconds=record_seconds, audio_input=audio_input)
         return "NEW AUDIO PROPERTIES SET"
@@ -69,15 +54,16 @@ if __name__ == '__main__':
 
     @app.route('/get_output_file')
     def get_output_file():
-        global output_file_path
         try:
             full_path = os.path.join(os.path.abspath(__file__), "..", output_file_path)
             file_name = full_path.split('/')[-1]
-            return send_file(full_path, attachment_filename=file_name)
+            return send_file(output_file_path, attachment_filename=file_name)
         except Exception as e:
             return str(e)
 
     # Starting server
     app.run(host='0.0.0.0', port=port)
+
+    udp_sender.stopping_server_message()
 
 
