@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     recorder = Recorder()
     audio_properties = Audio_properties()
-    output_file_path = "../output/test.wav"
+    output_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", "test.wav")
 
     udp_sender = UDPSender()
     udp_sender.send_message()
@@ -55,9 +55,12 @@ if __name__ == '__main__':
     @app.route('/get_output_file')
     def get_output_file():
         try:
-            full_path = os.path.join(os.path.abspath(__file__), "..", output_file_path)
+            if os.path.isabs(output_file_path):
+                full_path = output_file_path
+            else:
+                full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), output_file_path)
             file_name = full_path.split('/')[-1]
-            return send_file(output_file_path, attachment_filename=file_name)
+            return send_file(full_path, attachment_filename=file_name)
         except Exception as e:
             return str(e)
 

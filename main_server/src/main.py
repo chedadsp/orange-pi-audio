@@ -4,6 +4,7 @@ Created on Jun 1, 2018
 @author: Nebojsa
 '''
 from flask import Flask, render_template
+from sys import platform
 import requests
 import os
 import time
@@ -52,7 +53,7 @@ if __name__ == '__main__':
     def get_files():
         if udp_receiver.get_microphones():
             dir_name = time.strftime("%Y-%m-%d-%H-%M-%S")
-            new_dir_path = "../output/" + dir_name
+            new_dir_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", dir_name)
             try:
                 os.mkdir(new_dir_path)
             except OSError as e:
@@ -63,7 +64,11 @@ if __name__ == '__main__':
             for microphone_ip, microphone_mac in udp_receiver.get_microphones().items():
                 response = requests.get('http://{}:63000/get_output_file'.format(microphone_ip))
                 check_for_response(response, microphone_ip)
-                file_with_path = new_dir_path + "/output_" + str(microphone_mac) + ".wav"
+                # Windows cannot save files with ":" in name
+                if platform == "win32":
+                    microphone_mac = microphone_mac.replace(":", "")
+
+                file_with_path = os.path.join(new_dir_path, "output_" + str(microphone_mac) + ".wav")
                 with open(file_with_path, 'wb') as handle:
                     for block in response.iter_content(1024):
                         handle.write(block)

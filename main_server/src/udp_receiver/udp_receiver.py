@@ -26,6 +26,8 @@ class UDPReceiver(threading.Thread):
                 data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
                 print("received message:", data)
                 print("from address:", addr)
+                if data.decode() == "Shutdown":
+                    break
                 if addr[0] in self.microphones:
                     print("microphone with address {} removed".format(self.remove_microphone(addr[0])))
                 else:
@@ -41,7 +43,7 @@ class UDPReceiver(threading.Thread):
         message = "Shutdown"
         sock = socket.socket(socket.AF_INET,  # Internet
                              socket.SOCK_DGRAM)  # UDP
-        sock.sendto(message.encode(), (self.udp_ip, self.udp_port))
+        sock.sendto(message.encode(), ("127.0.0.1", self.udp_port))
 
     def get_microphones(self):
         return self.microphones
