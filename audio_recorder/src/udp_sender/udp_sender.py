@@ -6,6 +6,8 @@ class UDPSender(object):
 
     def __init__(self):
         self.server_ip = "255.255.255.255"
+        # On windows (depend on local network)
+        # self.server_ip = "local.network.number.255"
         self.udp_port = 5005
         self.mac_address = ':'.join(("%012X" % getnode())[i:i+2] for i in range(0, 12, 2))
 
