@@ -9,7 +9,7 @@ class UDPReceiver(threading.Thread):
         self.is_running = True
         self.udp_ip = ""
         self.udp_port = 5005
-        self.microphones = []
+        self.microphones = {}
 
     def run(self):
         print("Listener started.")
@@ -26,10 +26,11 @@ class UDPReceiver(threading.Thread):
                 data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
                 print("received message:", data)
                 print("from address:", addr)
-                if data.decode() == "Start":
-                    self.microphones.append(addr[0])
-                elif data.decode() == "Stop":
-                    self.remove_microphone(addr[0])
+                if addr[0] in self.microphones:
+                    print("microphone with address {} removed".format(self.remove_microphone(addr[0])))
+                else:
+                    self.microphones[addr[0]] = data.decode()
+                    print("microphone with address {} added".format(addr[0]))
         except KeyboardInterrupt:
             print("You pressed Ctrl+C")
         finally:
@@ -47,6 +48,6 @@ class UDPReceiver(threading.Thread):
 
     def remove_microphone(self, ip):
         try:
-            self.microphones.remove(ip)
+            self.microphones.pop(ip)
         except ValueError:
             print("There is no {} in list".format(ip))

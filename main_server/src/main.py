@@ -32,18 +32,18 @@ if __name__ == '__main__':
 
     @app.route('/record')
     def start_record():
-        for microphone in udp_receiver.get_microphones():
-            response = requests.get('http://{}:63000/record'.format(microphone))
-            check_for_response(response, microphone)
+        for microphone_ip, _ in udp_receiver.get_microphones().items():
+            response = requests.get('http://{}:63000/record'.format(microphone_ip))
+            check_for_response(response, microphone_ip)
 
         return render_template('index.html', text_value='Recording...', link='stop_record',
                                button_text='Stop recording', files_button_visible='none')
 
     @app.route('/stop_record')
     def stop_record():
-        for microphone in udp_receiver.get_microphones():
-            response = requests.get('http://{}:63000/stop_recording'.format(microphone))
-            check_for_response(response, microphone)
+        for microphone_ip, _ in udp_receiver.get_microphones().items():
+            response = requests.get('http://{}:63000/stop_recording'.format(microphone_ip))
+            check_for_response(response, microphone_ip)
 
         return render_template('index.html', text_value='Start recording again.', link='record', button_text='Record',
                                files_button_visible='visible')
@@ -60,10 +60,10 @@ if __name__ == '__main__':
                 return render_template('index.html', text_value='Cannot create output folder {}.'.format(dir_name),
                                        link='record', button_text='Record', files_button_visible='none')
 
-            for index, microphone in enumerate(udp_receiver.get_microphones()):
-                response = requests.get('http://{}:63000/get_output_file'.format(microphone))
-                check_for_response(response, microphone)
-                file_with_path = new_dir_path + "/output" + str(index) + ".wav"
+            for microphone_ip, microphone_mac in udp_receiver.get_microphones().items():
+                response = requests.get('http://{}:63000/get_output_file'.format(microphone_ip))
+                check_for_response(response, microphone_ip)
+                file_with_path = new_dir_path + "/output_" + str(microphone_mac) + ".wav"
                 with open(file_with_path, 'wb') as handle:
                     for block in response.iter_content(1024):
                         handle.write(block)
