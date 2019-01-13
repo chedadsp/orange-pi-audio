@@ -17,7 +17,7 @@ if __name__ == '__main__':
     output_file_path = "../output/test.wav"
 
     udp_sender = UDPSender()
-    udp_sender.starting_server_message()
+    udp_sender.send_message()
 
     port = 63000
     
@@ -64,6 +64,6 @@ if __name__ == '__main__':
     # Starting server
     app.run(host='0.0.0.0', port=port)
 
-    udp_sender.stopping_server_message()
+    udp_sender.send_message()
 
 
