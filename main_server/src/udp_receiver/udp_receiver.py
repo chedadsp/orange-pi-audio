@@ -1,3 +1,8 @@
+"""
+Created on Jan 10, 2019
+
+@author: Nebojsa
+"""
 import socket
 import threading
 
@@ -26,13 +31,23 @@ class UDPReceiver(threading.Thread):
                 data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
                 print("received message:", data)
                 print("from address:", addr)
-                if data.decode() == "Shutdown":
+                message = data.decode()
+                if message == "Shutdown":
                     break
-                if addr[0] in self.microphones:
-                    print("microphone with address {} removed".format(self.remove_microphone(addr[0])))
+                split_message = message.split(" ")
+                if len(split_message) == 2:
+
+                    if split_message[0] == "Start":
+                        print("New microphone added with address: {} and mac: {}".format(addr[0], split_message[1]))
+                        self.microphones[addr[0]] = split_message[1]
+                    elif split_message[0] == "Stop":
+                        print("Removing microphone with address: {} and mac: {}".format(addr[0], split_message[1]))
+                        self.remove_microphone(addr[0])
+                    else:
+                        self.unknown_message(message)
                 else:
-                    self.microphones[addr[0]] = data.decode()
-                    print("microphone with address {} added".format(addr[0]))
+                    self.unknown_message(message)
+
         except KeyboardInterrupt:
             print("You pressed Ctrl+C")
         finally:
@@ -51,5 +66,8 @@ class UDPReceiver(threading.Thread):
     def remove_microphone(self, ip):
         try:
             self.microphones.pop(ip)
-        except ValueError:
-            print("There is no {} in list".format(ip))
+        except KeyError:
+            print("There is no {} in map".format(ip))
+
+    def unknown_message(self, message):
+        print("Receive unknown message: {}".format(message))

@@ -1,23 +1,21 @@
-'''
+"""
 Created on Jun 1, 2018
 
 @author: Nebojsa
-'''
-from flask import Flask, send_file
-from model.audio_properties import Audio_properties
+"""
+from flask import Flask, Response
+from model.audioproperties import AudioProperties
 from recorder.recorder import Recorder
 from udp_sender.udp_sender import UDPSender
-import os
 
 if __name__ == '__main__':
     app = Flask(__name__)
 
     recorder = Recorder()
-    audio_properties = Audio_properties()
-    output_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", "test.wav")
+    audio_properties = AudioProperties()
 
     udp_sender = UDPSender()
-    udp_sender.send_message()
+    udp_sender.starting_server_message()
 
     port = 63000
     
@@ -27,7 +25,7 @@ if __name__ == '__main__':
         if recorder.is_recording():
             return "Already recording"
         else:
-            recorder = Recorder(audio_properties, output_file_path)
+            recorder = Recorder(audio_properties)
             recorder.start()
             return "Recording"
 
@@ -40,33 +38,22 @@ if __name__ == '__main__':
             recorder.join()
             return "Stopped recording"
     
-    @app.route('/set_audio_properties/<int:chunk>/<int:channels>/<int:rate>/<int:record_seconds>/<int:audio_input>')
-    def set_audio_properties(chunk, channels, rate, record_seconds, audio_input):
+    @app.route('/set_audio_properties/<int:chunk>/<int:channels>/<int:rate>/<int:audio_input>')
+    def set_audio_properties(chunk, channels, rate, audio_input):
         global audio_properties
-        audio_properties = Audio_properties(chunk=chunk, channels=channels, rate=rate, record_seconds=record_seconds, audio_input=audio_input)
+        audio_properties = AudioProperties(chunk=chunk, channels=channels, rate=rate, audio_input=audio_input)
         return "NEW AUDIO PROPERTIES SET"
-    
-    @app.route('/set_output_path/<path:path>')
-    def set_output_path(path):
-        global output_file_path
-        output_file_path = path
-        return "NEW FILE PATH SET"
 
-    @app.route('/get_output_file')
-    def get_output_file():
+    @app.route('/get_recorded_audio')
+    def get_recorded_audio():
         try:
-            if os.path.isabs(output_file_path):
-                full_path = output_file_path
-            else:
-                full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), output_file_path)
-            file_name = full_path.split('/')[-1]
-            return send_file(full_path, attachment_filename=file_name)
+            return Response(recorder.get_recorded_audio())
         except Exception as e:
             return str(e)
 
     # Starting server
     app.run(host='0.0.0.0', port=port)
 
-    udp_sender.send_message()
+    udp_sender.stopping_server_message()
 
 

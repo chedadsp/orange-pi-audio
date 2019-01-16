@@ -1,19 +1,22 @@
-'''
+"""
 Created on Jun 1, 2018
 
 @author: Nebojsa
-'''
+"""
 from flask import Flask, render_template
 from sys import platform
 import requests
 import os
 import time
+import wave
+import pyaudio
 from udp_receiver.udp_receiver import UDPReceiver
 
 if __name__ == '__main__':
     app = Flask(__name__)
 
     port = 62000
+    microphone_port = 63000
 
     udp_receiver = UDPReceiver()
     udp_receiver.start()
@@ -34,7 +37,7 @@ if __name__ == '__main__':
     @app.route('/record')
     def start_record():
         for microphone_ip, _ in udp_receiver.get_microphones().items():
-            response = requests.get('http://{}:63000/record'.format(microphone_ip))
+            response = requests.get('http://{}:{}/record'.format(microphone_ip, microphone_port))
             check_for_response(response, microphone_ip)
 
         return render_template('index.html', text_value='Recording...', link='stop_record',
@@ -43,7 +46,7 @@ if __name__ == '__main__':
     @app.route('/stop_record')
     def stop_record():
         for microphone_ip, _ in udp_receiver.get_microphones().items():
-            response = requests.get('http://{}:63000/stop_recording'.format(microphone_ip))
+            response = requests.get('http://{}:{}/stop_recording'.format(microphone_ip, microphone_port))
             check_for_response(response, microphone_ip)
 
         return render_template('index.html', text_value='Start recording again.', link='record', button_text='Record',
@@ -62,16 +65,19 @@ if __name__ == '__main__':
                                        link='record', button_text='Record', files_button_visible='none')
 
             for microphone_ip, microphone_mac in udp_receiver.get_microphones().items():
-                response = requests.get('http://{}:63000/get_output_file'.format(microphone_ip))
+                response = requests.get('http://{}:{}/get_recorded_audio'.format(microphone_ip, microphone_port))
                 check_for_response(response, microphone_ip)
                 # Windows cannot save files with ":" in name
                 if platform == "win32":
                     microphone_mac = microphone_mac.replace(":", "")
 
                 file_with_path = os.path.join(new_dir_path, "output_" + str(microphone_mac) + ".wav")
-                with open(file_with_path, 'wb') as handle:
-                    for block in response.iter_content(1024):
-                        handle.write(block)
+
+                with wave.open(file_with_path, 'wb') as wf:
+                    wf.setnchannels(1)
+                    wf.setsampwidth(pyaudio.PyAudio().get_sample_size(pyaudio.paInt16))
+                    wf.setframerate(16000)
+                    wf.writeframes(response.content)
 
             return render_template('index.html', text_value='Files have been downloaded and saved in {}.'
                                    .format(dir_name), link='record', button_text='Record', files_button_visible='none')
