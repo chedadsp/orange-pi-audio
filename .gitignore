@@ -100,6 +100,4 @@ ENV/
 # mypy
 .mypy_cache/
 
-audio_recorder/opa-env/
-
-audio_recorder/output/
+main_server/output/
