@@ -38,8 +38,9 @@ class UDPReceiver(threading.Thread):
                 if len(split_message) == 2:
 
                     if split_message[0] == "Start":
-                        print("New microphone added with address: {} and mac: {}".format(addr[0], split_message[1]))
-                        self.microphones[addr[0]] = split_message[1]
+                        if self.microphones.get(addr[0]) != split_message[1]:
+                            print("New microphone added with address: {} and mac: {}".format(addr[0], split_message[1]))
+                            self.microphones[addr[0]] = split_message[1]
                     elif split_message[0] == "Stop":
                         print("Removing microphone with address: {} and mac: {}".format(addr[0], split_message[1]))
                         self.remove_microphone(addr[0])
