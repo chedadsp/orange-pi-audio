@@ -15,7 +15,7 @@ if __name__ == '__main__':
     audio_properties = AudioProperties()
 
     udp_sender = UDPSender()
-    udp_sender.starting_server_message()
+    udp_sender.start()
 
     port = 63000
     
@@ -55,5 +55,5 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
 
     udp_sender.stopping_server_message()
-
+    udp_sender.join()
 
