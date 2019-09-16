@@ -5,6 +5,7 @@ Orange PI zero audio related stuff
 # audio recorder
 
 Python (version 3) program for running Flask server that can record a sound.
+Original inspuration cave from autors earlier experiments: https://github.com/makers-ns/Orange-Pi-Zero-Examples.
 It's going to be visible in local network with upnp implementation.
 
 #### Requirements:
